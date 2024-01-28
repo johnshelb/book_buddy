@@ -1,5 +1,6 @@
 body {
     font-family: verdana;
+    background-color: bisque;
   }
   
   input,button {
@@ -14,4 +15,70 @@ body {
   form > * {
     margin: 1rem;
   }
+  /* task 1 */
+  nav{
+    display:flex;
+    justify-content: space-around;
+  }
+/* task 2 */
+  .active-link {
+    text-decoration: underline;
+  }
   
+  .inactive-link {
+    text-decoration: none;
+  }
+  
+  /* task 8 */
+  .bookList{
+    display: flex;
+    justify-content: space-around;
+    width:95vw;
+    flex-wrap:wrap;
+  }
+  /* task 8 */
+
+  .bookItem{
+    width:23%;
+    margin:5px;
+    list-style: none;
+    font-size:.5em;
+  }
+/*task 9*/
+  @media screen and (max-width:700px) {
+   .bookItem{
+     width:95%;
+
+   } 
+  }
+
+  /* e.c. 1.5 */
+  .res{
+    background-color: aqua;
+  }
+  a:visited,a:link{
+    color:blue;
+  }
+  /* e.c 1 */
+  .max{
+    background-color:red;
+  }
+
+  img{
+    max-width: 100%;
+    max-height:500px;
+  }
+
+  /* e.c. 2 */
+  .flex{
+    display:flex;
+    justify-content: space-between;
+  }
+
+  .header{
+    margin:3em;
+  }
+
+  #search{
+    margin-left:auto;
+  }

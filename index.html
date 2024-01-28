@@ -34,28 +34,47 @@ import {
   useLocation
 } from 'react-router-dom';
 const { useState, useEffect } = React;
-
-const Home = ()=> {
+{/*task 17*/}
+const Home = ({resNum, authError})=> {
   return (
     <div>
       <h1>Welcome to Book Buddy</h1>
+      {/*task 13*/}
+      {window.localStorage.token && <p>You have {resNum} {resNum ===1?"book":"books"} reserved</p>}
+      {/*task 17*/}
+      {authError && <h3>Incorrect credentials!  Try again.</h3>}
     </div>
   );
 }
-const Books = ({ books, reserve, reservations, unreserve })=> {
+//ec 1, adding maxRes prop
+const Books = ({ books, reserve, reservations, unreserve, maxRes })=> {
   return (
-    <ul>
+    //task 8 => adding className
+    <ul  className = "bookList">
       {
         books.map( book => {
           const _reservations = reservations.filter( reservation => reservation.title === book.title);
           return (
-            <li key={ book.id }>
-              <h1>{ book.title }</h1>
+          //task 8 => adding className  AND task e.c. 1 maxres
+            <li className = {`bookItem ${maxRes!=0 && maxRes==_reservations.length?'max':""} ${_reservations.length?'res':""}`} key={ book.id }>
+
+              {/*task 10 =>make title a link to detail*/}
+              <Link to={`/books/${book.id}`}><h1>{book.title}</h1></Link>
+
+              
+              {/*task 7*/}
+              <h2>{ book.author }</h2>
+
+              {/*task 6*/}
+              {window.localStorage.token && 
+                <div>
               {
-                _reservations.length ? <button onClick={ ()=> unreserve(_reservations[0])}>-</button>: null
+                _reservations.length ? <button onClick={ ()=> unreserve(_reservations[0])}>-</button>:null
               }
               <button onClick={ ()=> reserve(book)}>+</button>
-              You have reserved this book { _reservations.length } time
+              {/*tasks 15 and 16*/}
+              {_reservations.length? <p> have reserved this book { _reservations.length } time{_reservations.length >1?"s":null}</p>: "  reserve this book"}
+              </div>}
             </li>
           );
         })
@@ -63,13 +82,16 @@ const Books = ({ books, reserve, reservations, unreserve })=> {
     </ul>
   );
 };
-
-const AuthForm = ({ submit })=> {
+{/*task 3 -- adding buttonText prop*/}
+const AuthForm = ({ submit, buttonText })=> {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const _submit = ev => {
     ev.preventDefault();
-    submit({ email, password});
+    submit({ email, password });
+    // extra credit plus
+    setEmail("")
+    setPassword("");
   }
   return (
     <form onSubmit={ _submit }>
@@ -78,12 +100,15 @@ const AuthForm = ({ submit })=> {
         value={ email }
         onChange={ ev => setEmail(ev.target.value) }
       />
-      <input
+      {/*task 4 => type = "password"*/}
+      <input 
+        type = "password"
         placeholder='password'
         value={ password }
         onChange={ ev => setPassword(ev.target.value) }
       />
-      <button>Submit</button>
+      {/*task 5 */}
+      <button disabled={email === "" || password === ""?true:false}>{buttonText}</button>
     </form>
   );
 };
@@ -92,7 +117,8 @@ const Login = ({ login })=> {
   return (
     <div>
       <h2>Login</h2>
-      <AuthForm submit={ login }/>
+      {/*task 3 ->adding buttonText prop*/}
+      <AuthForm buttonText = "login" submit={ login }/>
     </div>
   );
 };
@@ -101,18 +127,71 @@ const Register = ({ register })=> {
   return (
     <div>
       <h2>Register</h2>
-      <AuthForm submit={ register }/>
+            {/*task 3 ->adding buttonText prop*/}
+      <AuthForm buttonText = "register" submit={ register }/>
     </div>
   );
 };
 
+{/*task 10 => BookDetail component*/}
+const BookDetail = ({books})=>{
+  const {id} = useParams()
+  const book = books.filter(b=>b.id == id);
+  return(
+    <div>
+    {/*task 11*/}
+      <h1>{book[0].title}</h1>
+      <h2>{book[0].author}</h2>
+      <img src = {`${book[0].coverimage}`}/>
+      {/*task 12*/}
+      <br/>
+      <Link to="/books">Back to List</Link>
+    </div>
+  )
+}
 
+{/*task 18*/}
+const FAQ = ()=>{
+  return(
+    <>
+      <h1>FAQ</h1>
+      <p>This app lets you look at a list of books and reserve them </p>
+    </>
+  )
+}
+//extra credit 1
+  function getMaxRes(reservations){
+    let maxRes=0;
+    let maxTitle="";
+    let count = 0;
+    const titleObj = {};
+    reservations.forEach(ob=>{
+      titleObj[ob.title]?titleObj[ob.title]++:titleObj[ob.title]=1;
+    })
+    for(let key in titleObj){
+      if(titleObj[key]>maxRes){
+        maxRes  = titleObj[key];
+        maxTitle = key
+      }
+    }
+    // return maxTitle;
+    return maxRes;
+  }
 function App() {
   const API = 'https://fsa-book-buddy-b6e748d1380d.herokuapp.com/api';
   
   const [books, setBooks] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [auth, setAuth] = useState({});
+  //extra credit #1
+  const maxResTitle = getMaxRes(reservations);
+  //e.c.2
+  const [searchTerm,setSearchTerm] = useState("");
+  const [searchResults,setSearchResults] = useState([])
+
+  //task 17
+  const [authErr, setAuthErr] = useState(false);
+
 
   useEffect(()=> {
     if(window.localStorage.getItem('token')){
@@ -166,13 +245,16 @@ function App() {
       }
     );
     if(response.status === 200){
+            {/*task 17*/}
+      setAuthErr(false);
       const json = await response.json();
       window.localStorage.setItem('token', json.token);
       attemptLoginWithToken();
     }
     else {
       const json = await response.json();
-      console.log(json);
+      {/*task 17*/}
+      setAuthErr(true);
     }
   };
 
@@ -217,13 +299,16 @@ function App() {
       }
     );
     if(response.status === 200){
+       {/*task 17*/}
+       setAuthErr(false);
       const json = await response.json();
       window.localStorage.setItem('token', json.token, json.token);
       attemptLoginWithToken();
     }
     else {
       const json = await response.json();
-      console.log(json);
+      {/*task 17*/}
+      setAuthErr(true);
     }
   };
 
@@ -240,16 +325,40 @@ function App() {
     window.localStorage.removeItem('token');
     setAuth({});
   };
+  //ec 2
+  function handleSearch(e){
+    setSearchResults(search(searchTerm))    
+    window.location.hash =  `/search/${searchTerm}`
+  }
   
+
+  function search(term){
+    return books.filter(b=>{
+      return b.title.toLowerCase().indexOf(term.toLowerCase())!=-1 || b.author.toLowerCase().indexOf(term.toLowerCase())!=-1
+    })
+  }
+  //ec 2
+  function handleChange(e){
+    setSearchTerm(e.target.value);
+  }
   return (
     <div>
-      <h1>Book Buddy ({ books.length })</h1>
+      {/*task 1 class names*/}
+      <div className = 'flex header'>
+        <h1>Book Buddy ({ books.length })</h1><span id ="searchArea"><label htmlFor="search">Search </label>
+          <input value = {searchTerm} onChange={handleChange} id = "search"/>
+          <button onClick = {handleSearch}>Submit</button></span>
+      </div>
       <nav>
-        <Link to='/'>Home</Link>
-        <Link to='/books'>Books</Link>
+        {/*task 2 (plus in css) adding className*/}
+        <Link className = {useLocation().pathname=="/"?"active-link":"inactive-link"} to='/'>Home </Link>   
+        {/*task 14*/}
+        <Link  className = {useLocation().pathname=="/books"?"active-link":"inactive-link"} to='/books'>Books {window.localStorage.token && `(${reservations.length}  reserved)`}</Link>
         {
-          auth.id ? <button onClick={ logout }>Welcome {auth.email } Click to logout</button>: null
+          auth.id ? <button onClick={ logout }>Welcome { auth.email } Click to logout</button>: null
         }
+        {/*task 18*/}
+        <Link className = {useLocation().pathname=="/faq"?"active-link":"inactive-link"}to="/faq">FAQ</Link>
       </nav>
       {
         !auth.id && (
@@ -263,7 +372,12 @@ function App() {
         <Route
           path='/'
           element={
-            <Home />
+            <Home 
+            /*task 13*/
+              resNum = {reservations.length}
+              // task 17
+              authError = {authErr}
+            />
           }
         />
         <Route
@@ -274,9 +388,40 @@ function App() {
               reserve={ reserve }
               unreserve={ unreserve }
               reservations= { reservations }
-            />
-          }
+              maxRes = {maxResTitle}
+              />
+            }
         />
+          /*task 10*/
+            <Route
+              path = '/books/:id'
+              element = {
+                <BookDetail
+                  books = {books}
+                  />
+              }
+            />
+              // task 18
+            <Route
+              path = '/faq'
+              element = {
+                <FAQ />
+              }
+            />
+            //e.c. 2
+            <Route
+              path = {`/search/${searchTerm}`}
+              element = {
+              <Books
+                books={ searchResults}
+                reserve={ reserve }
+                unreserve={ unreserve }
+                reservations= { reservations }
+                maxRes = { maxResTitle }
+                />
+            }
+            />
+          
       </Routes>
     </div>
   );
@@ -289,4 +434,5 @@ root.render(
   </HashRouter>
 );
 </script>
+  
 </html>
