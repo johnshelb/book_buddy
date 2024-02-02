@@ -82,3 +82,6 @@ body {
   #search{
     margin-left:auto;
   }
+  h2{
+    margin-top: 0;
+  }

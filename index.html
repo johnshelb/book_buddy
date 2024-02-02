@@ -162,7 +162,6 @@ const FAQ = ()=>{
 //extra credit 1
   function getMaxRes(reservations){
     let maxRes=0;
-    let maxTitle="";
     let count = 0;
     const titleObj = {};
     reservations.forEach(ob=>{
@@ -171,10 +170,8 @@ const FAQ = ()=>{
     for(let key in titleObj){
       if(titleObj[key]>maxRes){
         maxRes  = titleObj[key];
-        maxTitle = key
       }
     }
-    // return maxTitle;
     return maxRes;
   }
 function App() {
@@ -184,7 +181,7 @@ function App() {
   const [reservations, setReservations] = useState([]);
   const [auth, setAuth] = useState({});
   //extra credit #1
-  const maxResTitle = getMaxRes(reservations);
+  const maxRes = getMaxRes(reservations);
   //e.c.2
   const [searchTerm,setSearchTerm] = useState("");
   const [searchResults,setSearchResults] = useState([])
@@ -388,7 +385,7 @@ function App() {
               reserve={ reserve }
               unreserve={ unreserve }
               reservations= { reservations }
-              maxRes = {maxResTitle}
+              maxRes = {maxRes}
               />
             }
         />
@@ -413,11 +410,11 @@ function App() {
               path = {`/search/${searchTerm}`}
               element = {
               <Books
-                books={ searchResults}
+                books={ searchResults }
                 reserve={ reserve }
                 unreserve={ unreserve }
                 reservations= { reservations }
-                maxRes = { maxResTitle }
+                maxRes = { maxRes }
                 />
             }
             />
